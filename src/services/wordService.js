@@ -1,70 +1,70 @@
-import { collection, getDocs, addDoc, serverTimestamp, query, orderBy, doc, getDoc, setDoc, where } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
 
-const WORDS_COLLECTION = 'words';
+const WORDS_JSON_PATH = '/data/words.json';
+
+// Helper to fetch words from local JSON
+async function fetchLocalWords() {
+  try {
+    const response = await fetch(WORDS_JSON_PATH);
+    if (!response.ok) throw new Error('Failed to fetch words.json');
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching local words:", error);
+    return [];
+  }
+}
 
 export const wordService = {
-  // Fetch all words
+  // Fetch all words from local JSON
   async getAllWords() {
     try {
-      const q = query(collection(db, WORDS_COLLECTION), orderBy('word', 'asc'));
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const words = await fetchLocalWords();
+      // Sort alphabetically by word name
+      return words.sort((a, b) => a.word.localeCompare(b.word));
     } catch (error) {
-      console.error("Error fetching words:", error);
-      throw error;
+      console.error("Error in getAllWords:", error);
+      return [];
     }
   },
 
   // Get daily 50 words for a user
+  // This now uses local JSON for the word list and Firestore only for user progress
   async getDailyWords(userId, userLevel = 'A1') {
     try {
+      // 1. Fetch user data from Firestore (minimal reads)
       const userRef = doc(db, 'users', userId);
       const userSnap = await getDoc(userRef);
       const userData = userSnap.data() || {};
-      
+      const learnedWords = userData.learnedWords || [];
       const today = new Date().toISOString().split('T')[0];
       
-      // If daily words already assigned for today, return them (but filter out any learned since then)
+      // 2. Load all vocabulary from JSON (cached by browser, 0 Firestore reads)
+      const allWords = await fetchLocalWords();
+
+      // 3. If daily words already assigned for today, return them (filtered against learned)
       if (userData.lastDailyReviewDate === today && userData.dailyWords && userData.dailyWords.length > 0) {
-        const learnedWords = userData.learnedWords || [];
-        
-        // Fetch specific daily words based on IDs
-        const q = query(collection(db, WORDS_COLLECTION));
-        const allWordsSnap = await getDocs(q);
-        const assignedWords = allWordsSnap.docs
-          .filter(doc => userData.dailyWords.includes(doc.id) && !learnedWords.includes(doc.id))
-          .map(doc => ({ id: doc.id, ...doc.data() }));
-          
+        const assignedWords = allWords.filter(w => 
+          userData.dailyWords.includes(w.id) && !learnedWords.includes(w.id)
+        );
         if (assignedWords.length > 0) return assignedWords;
       }
 
-      // Otherwise, pick new 50 words
-      const q = query(
-        collection(db, WORDS_COLLECTION),
-        where("level", "==", userLevel)
-      );
-      const levelWordsSnap = await getDocs(q);
-      let levelWords = levelWordsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // 4. Otherwise, pick new 50 words from the level
+      let levelWords = allWords.filter(w => w.level === userLevel);
       
-      // Fallback to all words if no level match
-      if (levelWords.length === 0) {
-         const allQ = query(collection(db, WORDS_COLLECTION));
-         const allSnap = await getDocs(allQ);
-         levelWords = allSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      }
+      // Fallback if no level match
+      if (levelWords.length === 0) levelWords = allWords;
 
-      const learnedWords = userData.learnedWords || [];
+      // Filter out already learned words
       const availableWords = levelWords.filter(w => !learnedWords.includes(w.id));
       
       // Shuffle and pick 50
-      const shuffled = availableWords.sort(() => 0.5 - Math.random());
-      const selectedWords = shuffled.slice(0, 50);
+      const selectedWords = availableWords
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 50);
       
-      // Save for today using setDoc with merge to ensure doc creation if missing
+      // 5. Save the selected IDs for today to Firestore
       await setDoc(userRef, {
         lastDailyReviewDate: today,
         dailyWords: selectedWords.map(w => w.id)
@@ -72,39 +72,21 @@ export const wordService = {
       
       return selectedWords;
     } catch (error) {
-      console.error("Error fetching daily words:", error);
-      throw error;
-    }
-  },
-
-  // Add a new word
-  async addWord(wordData) {
-    try {
-      const docRef = await addDoc(collection(db, WORDS_COLLECTION), {
-        ...wordData,
-        createdAt: serverTimestamp()
-      });
-      return { id: docRef.id, ...wordData };
-    } catch (error) {
-      console.error("Error adding word:", error);
-      throw error;
+      console.error("Error in getDailyWords:", error);
+      return [];
     }
   },
 
   // Fetch leaderboard: top users sorted by XP
   async getLeaderboard(limit = 20) {
     try {
-      const q = query(
-        collection(db, 'users'),
-        orderBy('xp', 'desc')
-      );
+      const q = query(collection(db, 'users'), orderBy('xp', 'desc'));
       const snap = await getDocs(q);
       const users = snap.docs.map((d, idx) => ({
         id: d.id,
         name: d.data().displayName || d.data().email?.split('@')[0] || 'Foydalanuvchi',
         xp: d.data().xp || 0,
         avatar: (d.data().displayName || d.data().email || 'U')
-          .replace(/\s+/g, ' ')
           .trim()
           .split(' ')
           .slice(0, 2)
@@ -130,13 +112,13 @@ export const wordService = {
       const today = new Date().toISOString().split('T')[0];
       const lastActive = data.lastActiveDate || '';
       const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      
       const newStreak = lastActive === today
-        ? (data.streak || 0)                         // already active today
+        ? (data.streak || 0)
         : lastActive === yesterday
-        ? (data.streak || 0) + 1                     // extend streak
-        : 1;                                         // streak reset
+        ? (data.streak || 0) + 1
+        : 1;
 
-      // Merge newly learned words
       const existingLearned = data.learnedWords || [];
       const newLearned = [...new Set([...existingLearned, ...learnedWordIds])];
 
@@ -167,13 +149,13 @@ export const wordService = {
       const today = new Date().toISOString().split('T')[0];
       const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
       const lastActive = data.lastActiveDate || '';
+      
       const newStreak = lastActive === today
         ? (data.streak || 0)
         : lastActive === yesterday
         ? (data.streak || 0) + 1
         : 1;
 
-      // Merge newly learned word IDs (easy = mastered)
       const existingLearned = data.learnedWords || [];
       const newLearned = [...new Set([...existingLearned, ...wordIds])];
 
@@ -216,10 +198,8 @@ export const wordService = {
       
       const data = snap.data();
       const progress = data.quizProgress;
-      
       if (!progress) return null;
       
-      // Only return if it's from today
       const today = new Date().toISOString().split('T')[0];
       if (progress.date !== today) return null;
       
