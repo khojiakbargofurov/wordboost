@@ -1,0 +1,53 @@
+.admin-header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1.5rem;
+}
+
+.word-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-input.textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.words-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.word-item-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.word-item-card h4 {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+}
+
+.word-item-card p {
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,16 @@
+.wb-card {
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.wb-card-glow:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+  border-color: var(--primary-alpha);
+}
+
+/* Base styles for card headers, bodies, etc can be added later if needed */
