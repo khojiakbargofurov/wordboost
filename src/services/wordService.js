@@ -7,7 +7,7 @@ export const wordService = {
   // Fetch all words
   async getAllWords() {
     try {
-      const q = query(collection(db, WORDS_COLLECTION), orderBy('createdAt', 'desc'));
+      const q = query(collection(db, WORDS_COLLECTION), orderBy('word', 'asc'));
       const querySnapshot = await getDocs(q);
       return querySnapshot.docs.map(doc => ({
         id: doc.id,
@@ -118,7 +118,7 @@ export const wordService = {
   },
 
   // Save quiz session results: adds XP, updates streak
-  async saveQuizResult(userId, { correctCount }) {
+  async saveQuizResult(userId, { correctCount, learnedWordIds = [] }) {
     try {
       const xpEarned = correctCount * 10;
       const userRef = doc(db, 'users', userId);
@@ -134,10 +134,15 @@ export const wordService = {
         ? (data.streak || 0) + 1                     // extend streak
         : 1;                                         // streak reset
 
+      // Merge newly learned words
+      const existingLearned = data.learnedWords || [];
+      const newLearned = [...new Set([...existingLearned, ...learnedWordIds])];
+
       await setDoc(userRef, {
         xp: (data.xp || 0) + xpEarned,
         streak: newStreak,
         lastActiveDate: today,
+        learnedWords: newLearned,
         totalQuizzesCompleted: (data.totalQuizzesCompleted || 0) + 1,
         totalCorrectAnswers: (data.totalCorrectAnswers || 0) + correctCount,
       }, { merge: true });

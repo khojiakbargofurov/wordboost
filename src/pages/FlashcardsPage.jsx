@@ -29,6 +29,7 @@ function FlashcardsPage() {
   const [sessionComplete, setSessionComplete] = useState(false);
   const [ratings, setRatings] = useState({ easy: 0, medium: 0, hard: 0 });
   const [xpEarned, setXpEarned] = useState(0);
+  const [masteredWordIds, setMasteredWordIds] = useState([]);
 
   const currentWord = words[currentIndex];
 
@@ -53,6 +54,13 @@ function FlashcardsPage() {
   const handleRating = async (rating) => {
     const updatedRatings = { ...ratings, [rating]: ratings[rating] + 1 };
     setRatings(updatedRatings);
+    
+    let updatedMasteredIds = masteredWordIds;
+    if (rating === 'easy') {
+      updatedMasteredIds = [...masteredWordIds, words[currentIndex].id];
+      setMasteredWordIds(updatedMasteredIds);
+    }
+    
     setIsFlipped(false);
 
     const isLast = currentIndex >= words.length - 1;
@@ -63,16 +71,8 @@ function FlashcardsPage() {
       } else {
         // Save session to Firestore
         if (currentUser?.uid) {
-          // Only 'easy' words count as mastered
-          const easyWordIds = words
-            .filter((_, i) => {
-              // We track per-word rating by index — approximate: last rating applies
-              return rating === 'easy' && i === currentIndex;
-            })
-            .map(w => w.id);
-
           const result = await wordService.saveFlashcardSession(currentUser.uid, {
-            wordIds: easyWordIds,
+            wordIds: updatedMasteredIds,
             easyCount: updatedRatings.easy,
             mediumCount: updatedRatings.medium,
           });

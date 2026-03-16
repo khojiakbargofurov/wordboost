@@ -68,6 +68,7 @@ function QuizPage() {
   const [score, setScore] = useState(0);
   const [quizComplete, setQuizComplete] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
+  const [correctlyAnsweredIds, setCorrectlyAnsweredIds] = useState([]);
 
   useEffect(() => {
     if (currentUser?.uid) {
@@ -90,6 +91,7 @@ function QuizPage() {
     setIsAnswered(true);
     if (index === questions[currentQuestionIndex].correctIndex) {
       setScore(s => s + 1);
+      setCorrectlyAnsweredIds(prev => [...prev, questions[currentQuestionIndex].id]);
     }
   }, [isAnswered, currentQuestionIndex, questions]);
 
@@ -102,7 +104,7 @@ function QuizPage() {
       if (currentUser?.uid) {
         const result = await wordService.saveQuizResult(currentUser.uid, {
           correctCount: score,
-          totalCount: questions.length,
+          learnedWordIds: correctlyAnsweredIds,
         });
         setXpEarned(result.xpEarned || 0);
       }
