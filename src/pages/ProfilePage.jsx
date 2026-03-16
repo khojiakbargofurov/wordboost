@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { User, Mail, Shield, Bell, LogOut, Check } from 'lucide-react';
 import Card from '../components/Card';
 import Button from '../components/Button';
@@ -9,21 +9,34 @@ import { doc, updateDoc } from 'firebase/firestore';
 import './ProfilePage.css';
 
 function ProfilePage() {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, userData, logout, refreshUserData } = useAuth();
   const navigate = useNavigate();
 
-  const [user, setUser] = useState({
-    name: currentUser?.displayName || 'WordBoost User',
-    email: currentUser?.email || 'No email provided',
-    level: currentUser?.level || 'A1',
-    joinDate: 'Joined recently',
+  // Derived user data - avoids extra state and cascading renders
+  const user = {
+    name: userData?.displayName || currentUser?.displayName || 'WordBoost User',
+    email: userData?.email || currentUser?.email || 'No email provided',
+    level: userData?.level || 'A1',
+    joinDate: userData?.createdAt?.toDate ? userData.createdAt.toDate().toLocaleDateString() : 'Joined recently',
     plan: 'Basic',
     notifications: true
-  });
+  };
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ name: user.name, level: user.level });
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [notifications, setNotifications] = useState(true);
+
+  // Sync formData with userData when it initially loads or changes, but only if not editing
+  useEffect(() => {
+    if (!isEditing && userData) {
+      setFormData({
+        name: userData.displayName || user.name,
+        level: userData.level || user.level
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userData, isEditing]);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -34,7 +47,7 @@ function ProfilePage() {
           level: formData.level
         });
       }
-      setUser({ ...user, name: formData.name, level: formData.level });
+      if (refreshUserData) await refreshUserData();
       setIsEditing(false);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -149,8 +162,8 @@ function ProfilePage() {
                 <label className="switch">
                   <input 
                     type="checkbox" 
-                    checked={user.notifications} 
-                    onChange={() => setUser({...user, notifications: !user.notifications})} 
+                    checked={notifications} 
+                    onChange={() => setNotifications(!notifications)} 
                   />
                   <span className="slider round"></span>
                 </label>

@@ -7,7 +7,7 @@ import { wordService } from '../services/wordService';
 import './ProgressPage.css';
 
 function ProgressPage() {
-  const { currentUser } = useAuth();
+  const { currentUser, userData } = useAuth();
   const [totalLevelWords, setTotalLevelWords] = useState(0);
   const [leaderboard, setLeaderboard] = useState([]);
   const [loadingLB, setLoadingLB] = useState(true);
@@ -27,7 +27,7 @@ function ProgressPage() {
     }).catch(() => setLoadingLB(false));
   }, [currentUser]);
 
-  const userXp = currentUser?.xp || 0;
+  const userXp = userData?.xp || 0;
   const userLevel = Math.floor(userXp / 1000) + 1;
   const nextLevelXp = userLevel * 1000;
   const rank =
@@ -36,7 +36,7 @@ function ProgressPage() {
     userXp > 500  ? 'Bronza Novice' : 'Yangi Boshlagan';
 
   const progressPercent = (userXp / nextLevelXp) * 100;
-  const wordsMastered = currentUser?.learnedWords?.length || 0;
+  const wordsMastered = userData?.learnedWords?.length || 0;
 
   // Find current user's position in leaderboard
   const myRank = leaderboard.findIndex(u => u.id === currentUser?.uid);
@@ -112,14 +112,14 @@ function ProgressPage() {
                 <TrendingUp size={24} />
               </div>
               <h4 className="mb-1">Doimiy O'rganuvchi</h4>
-              <p className="text-muted text-sm">{currentUser?.streak || 0} kunlik seria</p>
+              <p className="text-muted text-sm">{userData?.streak || 0} kunlik seria</p>
             </Card>
 
             <Card className="achievement-card">
               <div className="achievement-icon-wrapper blue mb-3">
                 <Book size={24} />
               </div>
-              <h4 className="mb-1">{currentUser?.level || 'A1'} Daraja</h4>
+              <h4 className="mb-1">{userData?.level || 'A1'} Daraja</h4>
               <p className="text-muted text-sm">{wordsMastered} / {totalLevelWords} so'z</p>
             </Card>
 

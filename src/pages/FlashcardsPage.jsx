@@ -7,7 +7,7 @@ import { wordService } from '../services/wordService';
 import './FlashcardsPage.css';
 
 function FlashcardsPage() {
-  const { currentUser } = useAuth();
+  const { currentUser, refreshUserData } = useAuth();
   const [words, setWords] = useState([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -77,6 +77,7 @@ function FlashcardsPage() {
             mediumCount: updatedRatings.medium,
           });
           setXpEarned(result.xpEarned || 0);
+          await refreshUserData();
         }
         setSessionComplete(true);
       }

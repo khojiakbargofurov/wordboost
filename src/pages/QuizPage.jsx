@@ -58,7 +58,7 @@ function buildQuestions(fetchedWords) {
 }
 
 function QuizPage() {
-  const { currentUser } = useAuth();
+  const { currentUser, refreshUserData } = useAuth();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -144,6 +144,9 @@ function QuizPage() {
           learnedWordIds: correctlyAnsweredIds,
         });
         setXpEarned(result.xpEarned || 0);
+        
+        // Refresh global user data context
+        if (refreshUserData) await refreshUserData();
         
         // Clear progress on completion
         await wordService.clearQuizProgress(currentUser.uid);

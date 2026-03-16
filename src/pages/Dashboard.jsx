@@ -9,11 +9,11 @@ import { wordService } from '../services/wordService';
 import './Dashboard.css';
 
 function Dashboard() {
-  const { currentUser } = useAuth();
+  const { currentUser, userData } = useAuth();
   const [totalWords, setTotalWords] = useState(0);
   const [dailyWordsCount, setDailyWordsCount] = useState(0);
 
-  const firstName = currentUser?.displayName ? currentUser.displayName.split(' ')[0] : 'Learner';
+  const firstName = userData?.displayName ? userData.displayName.split(' ')[0] : (currentUser?.displayName ? currentUser.displayName.split(' ')[0] : 'Learner');
 
   useEffect(() => {
     if (currentUser?.uid) {
@@ -27,14 +27,14 @@ function Dashboard() {
   }, [currentUser]);
 
   const stats = {
-    streak: currentUser?.streak || 0,
+    streak: userData?.streak || 0,
     wordsTotal: totalWords,
-    wordsLearned: currentUser?.xp > 0 ? Math.floor(currentUser.xp / 10) : 0,
+    wordsLearned: userData?.learnedWords?.length || 0,
     wordsToReview: dailyWordsCount,
-    dailyGoal: dailyWordsCount || 20,
-    dailyProgress: 0,
-    xp: currentUser?.xp || 0,
-    level: currentUser?.level || 1
+    dailyGoal: 50,
+    dailyProgress: Math.max(0, 50 - dailyWordsCount),
+    xp: userData?.xp || 0,
+    level: userData?.level || 1
   };
 
   return (
