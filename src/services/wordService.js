@@ -28,13 +28,15 @@ export const wordService = {
       
       const today = new Date().toISOString().split('T')[0];
       
-      // If daily words already assigned for today, return them
+      // If daily words already assigned for today, return them (but filter out any learned since then)
       if (userData.lastDailyReviewDate === today && userData.dailyWords && userData.dailyWords.length > 0) {
+        const learnedWords = userData.learnedWords || [];
+        
         // Fetch specific daily words based on IDs
         const q = query(collection(db, WORDS_COLLECTION));
         const allWordsSnap = await getDocs(q);
         const assignedWords = allWordsSnap.docs
-          .filter(doc => userData.dailyWords.includes(doc.id))
+          .filter(doc => userData.dailyWords.includes(doc.id) && !learnedWords.includes(doc.id))
           .map(doc => ({ id: doc.id, ...doc.data() }));
           
         if (assignedWords.length > 0) return assignedWords;
@@ -187,6 +189,55 @@ export const wordService = {
     } catch (error) {
       console.error('Error saving flashcard session:', error);
       return { xpEarned: 0 };
+    }
+  },
+
+  // Quiz progress persistence
+  async saveQuizProgress(userId, progress) {
+    try {
+      const userRef = doc(db, 'users', userId);
+      await setDoc(userRef, {
+        quizProgress: {
+          ...progress,
+          lastUpdated: serverTimestamp(),
+          date: new Date().toISOString().split('T')[0]
+        }
+      }, { merge: true });
+    } catch (error) {
+      console.error('Error saving quiz progress:', error);
+    }
+  },
+
+  async getQuizProgress(userId) {
+    try {
+      const userRef = doc(db, 'users', userId);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) return null;
+      
+      const data = snap.data();
+      const progress = data.quizProgress;
+      
+      if (!progress) return null;
+      
+      // Only return if it's from today
+      const today = new Date().toISOString().split('T')[0];
+      if (progress.date !== today) return null;
+      
+      return progress;
+    } catch (error) {
+      console.error('Error fetching quiz progress:', error);
+      return null;
+    }
+  },
+
+  async clearQuizProgress(userId) {
+    try {
+      const userRef = doc(db, 'users', userId);
+      await setDoc(userRef, {
+        quizProgress: null
+      }, { merge: true });
+    } catch (error) {
+      console.error('Error clearing quiz progress:', error);
     }
   }
 };

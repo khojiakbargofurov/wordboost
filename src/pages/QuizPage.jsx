@@ -72,16 +72,42 @@ function QuizPage() {
 
   useEffect(() => {
     if (currentUser?.uid) {
-      wordService.getDailyWords(currentUser.uid, currentUser.level || 'A1')
-        .then(fetchedWords => {
+      const loadQuiz = async () => {
+        try {
+          // Check for saved progress first
+          const saved = await wordService.getQuizProgress(currentUser.uid);
+          
+          if (saved && saved.questions && saved.questions.length > 0) {
+            setQuestions(saved.questions);
+            setCurrentQuestionIndex(saved.index || 0);
+            setScore(saved.score || 0);
+            setCorrectlyAnsweredIds(saved.correctlyAnsweredIds || []);
+            setLoading(false);
+            return;
+          }
+
+          // Otherwise fetch daily words and build new questions
+          const fetchedWords = await wordService.getDailyWords(currentUser.uid, currentUser.level || 'A1');
           const qs = buildQuestions(fetchedWords);
           setQuestions(qs);
           setLoading(false);
-        })
-        .catch(err => {
+          
+          // Initial save if we got questions
+          if (qs.length >= 4) {
+            await wordService.saveQuizProgress(currentUser.uid, {
+              questions: qs,
+              index: 0,
+              score: 0,
+              correctlyAnsweredIds: []
+            });
+          }
+        } catch (err) {
           console.error('Error loading quiz words', err);
           setLoading(false);
-        });
+        }
+      };
+      
+      loadQuiz();
     }
   }, [currentUser]);
 
@@ -99,7 +125,18 @@ function QuizPage() {
     setIsAnswered(false);
     setSelectedOption(null);
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(i => i + 1);
+      const nextIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(nextIndex);
+      
+      // Save progress
+      if (currentUser?.uid) {
+        await wordService.saveQuizProgress(currentUser.uid, {
+          questions,
+          index: nextIndex,
+          score,
+          correctlyAnsweredIds
+        });
+      }
     } else {
       if (currentUser?.uid) {
         const result = await wordService.saveQuizResult(currentUser.uid, {
@@ -107,6 +144,9 @@ function QuizPage() {
           learnedWordIds: correctlyAnsweredIds,
         });
         setXpEarned(result.xpEarned || 0);
+        
+        // Clear progress on completion
+        await wordService.clearQuizProgress(currentUser.uid);
       }
       setQuizComplete(true);
     }
