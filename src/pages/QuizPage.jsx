@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Trophy, ArrowRight, XCircle, CheckCircle2 } from 'lucide-react';
 import Card from '../components/Card';
 import Button from '../components/Button';
@@ -7,53 +7,60 @@ import { useAuth } from '../context/AuthContext';
 import { wordService } from '../services/wordService';
 import './QuizPage.css';
 
+// Fisher-Yates shuffle for true randomness
+function shuffle(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function buildQuestions(fetchedWords) {
+  if (fetchedWords.length < 4) return [];
+
+  // Deduplicate by definition so options are always distinct
+  const seen = new Set();
+  const uniqueWords = fetchedWords.filter(w => {
+    const def = w.definition || w.translation || w.meaning || '';
+    if (!def || seen.has(def)) return false;
+    seen.add(def);
+    return true;
+  });
+
+  if (uniqueWords.length < 4) return [];
+
+  // Pick up to 10 random words for this quiz session
+  const pool = shuffle(uniqueWords).slice(0, Math.min(10, uniqueWords.length));
+
+  return pool.map(word => {
+    const correctDef = word.definition || word.translation || word.meaning || 'No translation';
+
+    // Get 3 distractors that are different from the correct answer
+    const distractors = shuffle(
+      uniqueWords.filter(w => {
+        const d = w.definition || w.translation || w.meaning || '';
+        return w.id !== word.id && d !== correctDef && d !== '';
+      })
+    )
+      .slice(0, 3)
+      .map(w => w.definition || w.translation || w.meaning);
+
+    // If we couldn't get 3 unique distractors, skip this word
+    if (distractors.length < 3) return null;
+
+    const options = shuffle([...distractors, correctDef]);
+    const correctIndex = options.indexOf(correctDef);
+
+    return { id: word.id, word: word.word, options, correctIndex };
+  }).filter(Boolean); // remove null entries
+}
+
 function QuizPage() {
   const { currentUser } = useAuth();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    if (currentUser?.uid) {
-      wordService.getDailyWords(currentUser.uid, currentUser.level || 'A1')
-        .then(fetchedWords => {
-          if (fetchedWords.length < 4) {
-            setQuestions([]);
-            setLoading(false);
-            return;
-          }
-
-          // Pick up to 10 words for the quiz from the daily words
-          const shuffledWords = [...fetchedWords].sort(() => 0.5 - Math.random());
-          const selectedWords = shuffledWords.slice(0, 10);
-          
-          const generatedQuestions = selectedWords.map(word => {
-            // Get 3 random distinct distractors
-            const distractors = fetchedWords
-              .filter(w => w.id !== word.id)
-              .sort(() => 0.5 - Math.random())
-              .slice(0, 3)
-              .map(w => w.definition || w.translation || w.meaning || 'No translation');
-              
-            const correctMeaning = word.definition || word.translation || word.meaning || 'No translation';
-            const options = [...distractors, correctMeaning].sort(() => 0.5 - Math.random());
-            const correctIndex = options.indexOf(correctMeaning);
-            
-            return {
-              id: word.id,
-              word: word.word,
-              options,
-              correctIndex
-            };
-          });
-          
-          setQuestions(generatedQuestions);
-          setLoading(false);
-        })
-        .catch(err => {
-          console.error("Error loading quiz words", err);
-          setLoading(false);
-        });
-    }
-  }, [currentUser]);
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -61,43 +68,60 @@ function QuizPage() {
   const [score, setScore] = useState(0);
   const [quizComplete, setQuizComplete] = useState(false);
 
+  useEffect(() => {
+    if (currentUser?.uid) {
+      wordService.getDailyWords(currentUser.uid, currentUser.level || 'A1')
+        .then(fetchedWords => {
+          const qs = buildQuestions(fetchedWords);
+          setQuestions(qs);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error('Error loading quiz words', err);
+          setLoading(false);
+        });
+    }
+  }, [currentUser]);
+
+  const handleOptionSelect = useCallback((index) => {
+    if (isAnswered) return;
+    setSelectedOption(index);
+    setIsAnswered(true);
+    if (index === questions[currentQuestionIndex].correctIndex) {
+      setScore(s => s + 1);
+    }
+  }, [isAnswered, currentQuestionIndex, questions]);
+
+  const handleNext = useCallback(() => {
+    setIsAnswered(false);
+    setSelectedOption(null);
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(i => i + 1);
+    } else {
+      setQuizComplete(true);
+    }
+  }, [currentQuestionIndex, questions.length]);
+
   if (loading) {
-    return <div className="quiz-page flex justify-center items-center h-full"><h2>Generating quiz...</h2></div>;
+    return (
+      <div className="quiz-page flex justify-center items-center h-full">
+        <h2>Savollar tayyorlanmoqda...</h2>
+      </div>
+    );
   }
 
   if (questions.length < 4) {
     return (
       <div className="quiz-page flex flex-col justify-center items-center h-full gap-4 text-center">
-        <h2>Not enough words!</h2>
-        <p className="text-muted">You need at least 4 words in the database to generate a multiple-choice quiz.</p>
-        <Button variant="primary" onClick={() => window.history.back()}>Go Back</Button>
+        <h2>Yetarli so'z yo'q!</h2>
+        <p className="text-muted">Quiz uchun kamida 4 ta har xil so'z kerak.</p>
+        <Button variant="primary" onClick={() => window.history.back()}>Orqaga</Button>
       </div>
     );
   }
 
   const currentQuestion = questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex) / questions.length) * 100;
-
-  const handleOptionSelect = (index) => {
-    if (isAnswered) return;
-    setSelectedOption(index);
-    setIsAnswered(true);
-
-    if (index === currentQuestion.correctIndex) {
-      setScore(score + 1);
-    }
-  };
-
-  const handleNext = () => {
-    setIsAnswered(false);
-    setSelectedOption(null);
-
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      setQuizComplete(true);
-    }
-  };
+  const progress = (currentQuestionIndex / questions.length) * 100;
 
   if (quizComplete) {
     return (
@@ -106,23 +130,19 @@ function QuizPage() {
           <div className="completion-icon">
             <Trophy size={64} className="text-warning" />
           </div>
-          <h2>Quiz Completed!</h2>
+          <h2>Quiz yakunlandi!</h2>
           <p className="text-muted mt-3 mb-6">
-            You scored {score} out of {questions.length} correct.
+            {questions.length} savoldan {score} tasiga to'g'ri javob berdingiz.
           </p>
-          
+
           <div className="score-ring">
             <svg viewBox="0 0 36 36" className="circular-chart orange">
               <path className="circle-bg"
-                d="M18 2.0845
-                  a 15.9155 15.9155 0 0 1 0 31.831
-                  a 15.9155 15.9155 0 0 1 0 -31.831"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               />
               <path className="circle"
                 strokeDasharray={`${(score / questions.length) * 100}, 100`}
-                d="M18 2.0845
-                  a 15.9155 15.9155 0 0 1 0 31.831
-                  a 15.9155 15.9155 0 0 1 0 -31.831"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               />
               <text x="18" y="20.35" className="percentage">
                 {Math.round((score / questions.length) * 100)}%
@@ -132,7 +152,7 @@ function QuizPage() {
 
           <div className="quiz-actions mt-8">
             <Button variant="primary" onClick={() => window.history.back()} fullWidth>
-              Return to Dashboard
+              Dashboardga qaytish
             </Button>
           </div>
         </Card>
@@ -144,15 +164,15 @@ function QuizPage() {
     <div className="quiz-page">
       <div className="quiz-header">
         <div className="quiz-progress-text">
-          <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
-          <span>Score: {score}</span>
+          <span>Savol {currentQuestionIndex + 1} / {questions.length}</span>
+          <span>Ball: {score}</span>
         </div>
         <ProgressBar progress={progress} className="mb-4" />
       </div>
 
       <Card className="quiz-card" glow={true}>
         <div className="question-section">
-          <p className="question-prompt text-muted font-medium mb-2">What is the meaning of:</p>
+          <p className="question-prompt text-muted font-medium mb-2">Bu so'zning ma'nosi nima?</p>
           <h2 className="question-word">{currentQuestion.word}</h2>
         </div>
 
@@ -176,8 +196,8 @@ function QuizPage() {
             }
 
             return (
-              <button 
-                key={index}
+              <button
+                key={`${currentQuestion.id}-${index}`}
                 className={optionClass}
                 onClick={() => handleOptionSelect(index)}
                 disabled={isAnswered}
@@ -191,14 +211,14 @@ function QuizPage() {
 
         {isAnswered && (
           <div className="next-button-wrapper fade-in">
-            <Button 
-              variant="primary" 
-              onClick={handleNext} 
+            <Button
+              variant="primary"
+              onClick={handleNext}
               icon={ArrowRight}
               size="lg"
               fullWidth
             >
-              {currentQuestionIndex === questions.length - 1 ? 'Finish Quiz' : 'Next Question'}
+              {currentQuestionIndex === questions.length - 1 ? "Yakunlash" : "Keyingi savol"}
             </Button>
           </div>
         )}

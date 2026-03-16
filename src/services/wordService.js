@@ -87,5 +87,33 @@ export const wordService = {
       console.error("Error adding word:", error);
       throw error;
     }
+  },
+
+  // Fetch leaderboard: top users sorted by XP
+  async getLeaderboard(limit = 20) {
+    try {
+      const q = query(
+        collection(db, 'users'),
+        orderBy('xp', 'desc')
+      );
+      const snap = await getDocs(q);
+      const users = snap.docs.map((d, idx) => ({
+        id: d.id,
+        name: d.data().displayName || d.data().email?.split('@')[0] || 'Foydalanuvchi',
+        xp: d.data().xp || 0,
+        avatar: (d.data().displayName || d.data().email || 'U')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .split(' ')
+          .slice(0, 2)
+          .map(n => n[0]?.toUpperCase() || '')
+          .join(''),
+        rank: idx + 1,
+      }));
+      return users.slice(0, limit);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      return [];
+    }
   }
 };

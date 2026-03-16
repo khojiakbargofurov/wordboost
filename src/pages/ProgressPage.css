@@ -1,6 +1,81 @@
 /* ─── Progress / Leaderboard Page ───────────────── */
 .progress-page { animation: fadeIn 0.35s ease-out both; }
 
+/* Leaderboard header */
+.lb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.lb-count { font-size: 0.82rem; }
+
+/* Loading state */
+.lb-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 0;
+}
+
+.lb-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255,255,255,0.06);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spinLoader 0.9s linear infinite;
+}
+
+@keyframes spinLoader {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty state */
+.lb-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 0;
+  text-align: center;
+}
+
+/* Separator row */
+.lb-separator {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+  padding: 0.25rem 0;
+}
+
+/* Rank icons */
+.rank-gold   { color: #FBBF24; }
+.rank-silver { color: #9CA3AF; }
+.rank-bronze { color: #F97316; }
+
+/* Current user highlight avatar */
+.avatar-me {
+  background: linear-gradient(135deg, var(--primary), #A78BFA) !important;
+  box-shadow: 0 0 12px rgba(108, 99, 255, 0.4);
+}
+
+/* "Siz" badge */
+.you-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: var(--primary-alpha);
+  color: var(--accent-violet);
+  border: 1px solid rgba(108,99,255,0.3);
+  border-radius: 999px;
+  padding: 0 0.45rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+  letter-spacing: 0.04em;
+}
+
 .progress-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -73,6 +148,9 @@
 
 .achievement-icon-wrapper.purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
 .achievement-icon-wrapper.orange { background: rgba(245, 158, 11, 0.15);  color: #fbbf24; }
+.achievement-icon-wrapper.blue   { background: rgba(59, 130, 246, 0.15);  color: #60a5fa; }
+.achievement-icon-wrapper.amber  { background: rgba(251, 191, 36, 0.15);  color: #fcd34d; }
+
 
 .achievement-card h4 { margin: 0; font-size: 0.9rem; }
 
