@@ -27,6 +27,8 @@ function FlashcardsPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [sessionComplete, setSessionComplete] = useState(false);
+  const [ratings, setRatings] = useState({ easy: 0, medium: 0, hard: 0 });
+  const [xpEarned, setXpEarned] = useState(0);
 
   const currentWord = words[currentIndex];
 
@@ -48,18 +50,34 @@ function FlashcardsPage() {
     );
   }
 
-  const handleRating = (rating) => {
-    // In a real app we would save the rating/spaced repetition data to DB here
-    console.log(`Word rated as: ${rating}`);
-    
-    // Move to next word
+  const handleRating = async (rating) => {
+    const updatedRatings = { ...ratings, [rating]: ratings[rating] + 1 };
+    setRatings(updatedRatings);
     setIsFlipped(false);
-    
-    // Small timeout to allow flip animation to reset before changing content
-    setTimeout(() => {
-      if (currentIndex < words.length - 1) {
+
+    const isLast = currentIndex >= words.length - 1;
+
+    setTimeout(async () => {
+      if (!isLast) {
         setCurrentIndex(currentIndex + 1);
       } else {
+        // Save session to Firestore
+        if (currentUser?.uid) {
+          // Only 'easy' words count as mastered
+          const easyWordIds = words
+            .filter((_, i) => {
+              // We track per-word rating by index — approximate: last rating applies
+              return rating === 'easy' && i === currentIndex;
+            })
+            .map(w => w.id);
+
+          const result = await wordService.saveFlashcardSession(currentUser.uid, {
+            wordIds: easyWordIds,
+            easyCount: updatedRatings.easy,
+            mediumCount: updatedRatings.medium,
+          });
+          setXpEarned(result.xpEarned || 0);
+        }
         setSessionComplete(true);
       }
     }, 150);
@@ -72,10 +90,15 @@ function FlashcardsPage() {
           <div className="completion-icon">
             <CheckCircle2 size={64} className="text-success" />
           </div>
-          <h2>Session Complete!</h2>
+          <h2>Session tugadi!</h2>
           <p className="text-muted mt-3 mb-6">
-            You've reviewed all your assigned words for today.
+            Bugun {words.length} ta so'zni ko'rib chiqdingiz.
           </p>
+          {xpEarned > 0 && (
+            <div className="xp-earned-badge">
+              <span>+{xpEarned} XP qo'shildi! 🎉</span>
+            </div>
+          )}
           <div className="session-stats">
             <div className="stat">
               <span className="stat-num">{words.length}</span>

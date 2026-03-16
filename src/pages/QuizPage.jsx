@@ -67,6 +67,7 @@ function QuizPage() {
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
   const [quizComplete, setQuizComplete] = useState(false);
+  const [xpEarned, setXpEarned] = useState(0);
 
   useEffect(() => {
     if (currentUser?.uid) {
@@ -92,15 +93,22 @@ function QuizPage() {
     }
   }, [isAnswered, currentQuestionIndex, questions]);
 
-  const handleNext = useCallback(() => {
+  const handleNext = async () => {
     setIsAnswered(false);
     setSelectedOption(null);
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(i => i + 1);
     } else {
+      if (currentUser?.uid) {
+        const result = await wordService.saveQuizResult(currentUser.uid, {
+          correctCount: score,
+          totalCount: questions.length,
+        });
+        setXpEarned(result.xpEarned || 0);
+      }
       setQuizComplete(true);
     }
-  }, [currentQuestionIndex, questions.length]);
+  };
 
   if (loading) {
     return (
@@ -132,8 +140,13 @@ function QuizPage() {
           </div>
           <h2>Quiz yakunlandi!</h2>
           <p className="text-muted mt-3 mb-6">
-            {questions.length} savoldan {score} tasiga to'g'ri javob berdingiz.
+            {questions.length} savoldan <strong>{score}</strong> tasiga to'g'ri javob berdingiz.
           </p>
+          {xpEarned > 0 && (
+            <div className="xp-earned-badge">
+              <span>+{xpEarned} XP qo'shildi! 🎉</span>
+            </div>
+          )}
 
           <div className="score-ring">
             <svg viewBox="0 0 36 36" className="circular-chart orange">

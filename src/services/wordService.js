@@ -115,5 +115,73 @@ export const wordService = {
       console.error("Error fetching leaderboard:", error);
       return [];
     }
+  },
+
+  // Save quiz session results: adds XP, updates streak
+  async saveQuizResult(userId, { correctCount }) {
+    try {
+      const xpEarned = correctCount * 10;
+      const userRef = doc(db, 'users', userId);
+      const userSnap = await getDoc(userRef);
+      const data = userSnap.data() || {};
+
+      const today = new Date().toISOString().split('T')[0];
+      const lastActive = data.lastActiveDate || '';
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const newStreak = lastActive === today
+        ? (data.streak || 0)                         // already active today
+        : lastActive === yesterday
+        ? (data.streak || 0) + 1                     // extend streak
+        : 1;                                         // streak reset
+
+      await setDoc(userRef, {
+        xp: (data.xp || 0) + xpEarned,
+        streak: newStreak,
+        lastActiveDate: today,
+        totalQuizzesCompleted: (data.totalQuizzesCompleted || 0) + 1,
+        totalCorrectAnswers: (data.totalCorrectAnswers || 0) + correctCount,
+      }, { merge: true });
+
+      return { xpEarned, newStreak };
+    } catch (error) {
+      console.error('Error saving quiz result:', error);
+      return { xpEarned: 0 };
+    }
+  },
+
+  // Save flashcard session: marks words as learned, adds XP, updates streak
+  async saveFlashcardSession(userId, { wordIds = [], easyCount = 0, mediumCount = 0 }) {
+    try {
+      const xpEarned = easyCount * 15 + mediumCount * 8;
+      const userRef = doc(db, 'users', userId);
+      const userSnap = await getDoc(userRef);
+      const data = userSnap.data() || {};
+
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      const lastActive = data.lastActiveDate || '';
+      const newStreak = lastActive === today
+        ? (data.streak || 0)
+        : lastActive === yesterday
+        ? (data.streak || 0) + 1
+        : 1;
+
+      // Merge newly learned word IDs (easy = mastered)
+      const existingLearned = data.learnedWords || [];
+      const newLearned = [...new Set([...existingLearned, ...wordIds])];
+
+      await setDoc(userRef, {
+        xp: (data.xp || 0) + xpEarned,
+        streak: newStreak,
+        lastActiveDate: today,
+        learnedWords: newLearned,
+        totalFlashcardsReviewed: (data.totalFlashcardsReviewed || 0) + wordIds.length,
+      }, { merge: true });
+
+      return { xpEarned, newStreak };
+    } catch (error) {
+      console.error('Error saving flashcard session:', error);
+      return { xpEarned: 0 };
+    }
   }
 };
