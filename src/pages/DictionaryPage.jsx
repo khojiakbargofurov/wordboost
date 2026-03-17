@@ -27,8 +27,9 @@ export default function DictionaryPage() {
     const term = searchQuery.toLowerCase();
     return (
       word.word?.toLowerCase().includes(term) ||
-      word.meaning?.toLowerCase().includes(term) ||
-      word.translation_en?.toLowerCase().includes(term)
+      word.translation_uz?.toLowerCase().includes(term) ||
+      word.translation_en?.toLowerCase().includes(term) ||
+      word.meaning?.toLowerCase().includes(term) // fallback
     );
   });
 
@@ -78,15 +79,21 @@ export default function DictionaryPage() {
                   </span>
                 </div>
                 
-                <div className="translations mb-4 space-y-1">
-                  {word.meaning && <p><strong>UZ:</strong> {word.meaning}</p>}
-                  {word.translation_en && <p><strong>EN:</strong> {word.translation_en}</p>}
+                <div className="translations mb-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">UZ</span>
+                    <p className="text-gray-200">{word.translation_uz || word.meaning}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-green-500/10 text-green-400">EN</span>
+                    <p className="text-gray-400">{word.translation_en}</p>
+                  </div>
                 </div>
 
-                {word.example && (
-                  <div className="example-box bg-background/50 p-4 rounded-lg mt-4 border border-card-border">
-                    <p className="text-sm italic text-gray-300">"{word.example}"</p>
-                    {word.example_en && <p className="text-xs text-muted mt-1">{word.example_en}</p>}
+                {(word.example_de || word.example) && (
+                  <div className="example-box bg-background/30 p-4 rounded-xl mt-4 border border-white/5">
+                    <p className="text-sm italic text-gray-300 font-medium">"{word.example_de || word.example}"</p>
+                    {(word.example_en) && <p className="text-xs text-muted mt-2 border-t border-white/5 pt-2">{word.example_en}</p>}
                   </div>
                 )}
 
