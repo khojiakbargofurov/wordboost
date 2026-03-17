@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import Card from '../components/Card';
+import Button from '../components/Button';
 import './DictionaryPage.css';
 import { wordService } from '../services/wordService';
 
 export default function DictionaryPage() {
   const [words, setWords] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,9 +32,26 @@ export default function DictionaryPage() {
       word.word?.toLowerCase().includes(term) ||
       word.translation_uz?.toLowerCase().includes(term) ||
       word.translation_en?.toLowerCase().includes(term) ||
-      word.meaning?.toLowerCase().includes(term) // fallback
+      word.meaning?.toLowerCase().includes(term)
     );
   });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredWords.length / itemsPerPage);
+  const currentWords = filteredWords.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+   
+  // Reset page when searching
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   return (
     <div className="dictionary-container fade-in">
@@ -58,7 +78,8 @@ export default function DictionaryPage() {
       {loading ? (
         <div className="flex justify-center mt-12"><div className="loader"></div></div>
       ) : (
-        <div className="table-responsive mt-8">
+        <>
+          <div className="table-responsive mt-8">
           <table className="admin-table">
             <thead>
               <tr>
@@ -70,34 +91,36 @@ export default function DictionaryPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredWords.length === 0 ? (
+              {currentWords.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="text-center p-12 text-muted">
-                    No words found for "{searchQuery}".
+                    So'z topilmadi.
                   </td>
                 </tr>
               ) : (
-                filteredWords.slice(0, 100).map((word, index) => (
+                currentWords.map((word, index) => (
                   <tr key={word.id}>
-                    <td className="text-center text-xs text-muted font-mono">{index + 1}</td>
+                    <td className="text-center text-xs text-muted font-mono">
+                      {(currentPage - 1) * itemsPerPage + index + 1}
+                    </td>
                     <td className="font-bold text-primary">
-                      {word.article && <span className="text-xs text-muted mr-1">{word.article}</span>}
+                      {word.article && <span className="text-blue-400">{word.article} </span>}
                       {word.word}
                     </td>
-                    <td>
+                    <td className="text-center">
                       <span className={`level-badge level-${word.level?.toLowerCase() || 'a1'}`}>
                         {word.level || 'A1'}
                       </span>
                     </td>
                     <td>
-                      <div className="flex flex-column gap-1">
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs font-bold px-1 py-0.5 rounded bg-blue-500/10 text-blue-400">UZ</span>
-                          <span className="text-sm">{word.translation_uz || word.meaning}</span>
+                      <div className="flex flex-col gap-1.5 py-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold px-1 py-0.5 rounded bg-blue-500/10 text-blue-400 min-w-[24px] text-center">UZ</span>
+                          <span className="text-sm border-l border-white/10 pl-2">{word.translation_uz || word.meaning}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs font-bold px-1 py-0.5 rounded bg-green-500/10 text-green-400">EN</span>
-                          <span className="text-xs text-muted">{word.translation_en}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold px-1 py-0.5 rounded bg-green-500/10 text-green-400 min-w-[24px] text-center">EN</span>
+                          <span className="text-xs text-muted border-l border-white/10 pl-2">{word.translation_en}</span>
                         </div>
                       </div>
                     </td>
@@ -113,6 +136,31 @@ export default function DictionaryPage() {
             </tbody>
           </table>
         </div>
+
+        {totalPages > 1 && (
+          <div className="pagination flex justify-center items-center gap-4 mt-8 pb-12">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              disabled={currentPage === 1}
+              onClick={() => handlePageChange(currentPage - 1)}
+            >
+              Oldingi
+            </Button>
+            <div className="text-sm font-medium">
+              Sahifa {currentPage} / {totalPages}
+            </div>
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              disabled={currentPage === totalPages}
+              onClick={() => handlePageChange(currentPage + 1)}
+            >
+              Keyingi
+            </Button>
+          </div>
+        )}
+        </>
       )}
     </div>
   );

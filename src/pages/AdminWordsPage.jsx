@@ -16,6 +16,8 @@ export default function AdminWordsPage() {
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
   
   // Word form state
   const [formData, setFormData] = useState({
@@ -58,6 +60,23 @@ export default function AdminWordsPage() {
       word.translation_en?.toLowerCase().includes(term)
     );
   });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredWords.length / itemsPerPage);
+  const currentWords = filteredWords.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+   
+  // Reset page when searching
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const handleAddWord = async (e) => {
     e.preventDefault();
@@ -223,22 +242,30 @@ export default function AdminWordsPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredWords.map((w, index) => (
+            {currentWords.map((w, index) => (
               <tr key={w.id}>
-                <td className="text-center text-xs text-muted font-mono">{index + 1}</td>
-                <td className="font-bold text-primary">
-                  {w.word}
-                  {w.article && <span className="text-xs text-muted ml-1">({w.article})</span>}
+                <td className="text-center text-xs text-muted font-mono">
+                  {(currentPage - 1) * itemsPerPage + index + 1}
                 </td>
-                <td>
+                <td className="font-bold text-primary">
+                  {w.article && <span className="text-blue-400">{w.article} </span>}
+                  {w.word}
+                </td>
+                <td className="text-center">
                   <span className={`level-badge level-${w.level?.toLowerCase() || 'a1'}`}>
                     {w.level || 'A1'}
                   </span>
                 </td>
                 <td>
-                  <div className="flex flex-column gap-1">
-                    <span className="text-sm">{w.translation_uz || w.meaning}</span>
-                    <span className="text-xs text-muted">{w.translation_en}</span>
+                  <div className="flex flex-col gap-1.5 py-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold px-1 py-0.5 rounded bg-blue-500/10 text-blue-400 min-w-[24px] text-center">UZ</span>
+                      <span className="text-sm border-l border-white/10 pl-2">{w.translation_uz || w.meaning}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold px-1 py-0.5 rounded bg-green-500/10 text-green-400 min-w-[24px] text-center">EN</span>
+                      <span className="text-xs text-muted border-l border-white/10 pl-2">{w.translation_en}</span>
+                    </div>
                   </div>
                 </td>
                 <td>
@@ -252,9 +279,33 @@ export default function AdminWordsPage() {
         </table>
         
         {words.length === 0 && !isAdding && (
-          <div className="text-center p-8 text-muted">No words in the database yet. Add one!</div>
+          <div className="text-center p-8 text-muted">Bazada so'zlar topilmadi.</div>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="pagination flex justify-center items-center gap-4 mt-8 pb-12">
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+          >
+            Oldingi
+          </Button>
+          <div className="text-sm font-medium text-muted">
+            Sahifa {currentPage} / {totalPages}
+          </div>
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            disabled={currentPage === totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+          >
+            Keyingi
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
