@@ -3,7 +3,7 @@ import { Bell, Info, AlertCircle, CheckCircle2, Trash2 } from 'lucide-react';
 import { notificationService } from '../services/notificationService';
 import './NotificationCenter.css';
 
-export default function NotificationCenter() {
+export default function NotificationCenter({ direction = 'top' }) {
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -75,7 +75,7 @@ export default function NotificationCenter() {
       </button>
 
       {showDropdown && (
-        <div className="notification-dropdown glass">
+        <div className={`notification-dropdown glass dir-${direction}`}>
           <div className="dropdown-header">
             <h3>Bildirishnomalar</h3>
             <span className="text-xs text-muted">{notifications.length} ta xabar</span>

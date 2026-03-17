@@ -21,7 +21,7 @@ function Sidebar() {
           <span className="logo-text">WordBoost</span>
         </div>
         <div className="flex items-center gap-2">
-          <NotificationCenter />
+          <NotificationCenter direction="top" />
           <button className="hamburger-btn" onClick={toggle} aria-label="Menu">
             {open ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -65,9 +65,6 @@ function Sidebar() {
           <NavLink to="/profile" className="nav-item" onClick={close}>
             <User size={20} /><span>Profile</span>
           </NavLink>
-          <div className="sidebar-footer-desktop hidden md:block mt-4 pt-4 border-t border-white/5">
-            <NotificationCenter />
-          </div>
         </div>
       </aside>
     </>

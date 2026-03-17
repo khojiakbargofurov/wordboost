@@ -1,0 +1,40 @@
+.app-header {
+  height: 70px;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 1.5rem;
+  z-index: 100;
+  margin: 1.5rem 2rem 0 0;
+  border-radius: 20px;
+  background: rgba(43, 43, 75, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.user-profile-mini {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-left: 1.5rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.user-name {
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    display: none; /* Mobile uses the sidebar hamburger topbar */
+  }
+}
