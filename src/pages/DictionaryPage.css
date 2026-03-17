@@ -60,6 +60,15 @@
   vertical-align: middle;
 }
 
+.admin-table th.w-12,
+.admin-table td.text-center {
+  width: 50px;
+}
+
+.admin-table tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
 .level-badge {
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
