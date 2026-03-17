@@ -176,7 +176,7 @@ export default function AdminWordsPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <SearchIcon size={22} className="search-icon absolute left-5 top-1/2 transform translate-y-[-50%] text-muted" />
+          <SearchIcon size={22} className="search-icon" />
         </div>
       </div>
 

@@ -51,7 +51,7 @@ export default function DictionaryPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <Search size={22} className="search-icon absolute left-5 top-1/2 transform translate-y-[-50%] text-muted" />
+          <Search size={22} className="search-icon" />
         </div>
       </header>
 
