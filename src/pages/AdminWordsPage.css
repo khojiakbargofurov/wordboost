@@ -41,8 +41,14 @@
 
 .admin-table th,
 .admin-table td {
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.admin-table th.w-12,
+.admin-table td.text-center {
+  width: 50px;
 }
 
 .admin-table th {

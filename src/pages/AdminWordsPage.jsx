@@ -147,12 +147,12 @@ export default function AdminWordsPage() {
           </h1>
           <p className="text-muted mt-2">Add or view vocabulary in the database.</p>
         </div>
-        <div className="flex gap-4">
-          <Button onClick={handleSeedDatabase} variant="secondary" disabled={loading}>
-            📥 Seed from JSON
+        <div className="flex gap-2">
+          <Button onClick={handleSeedDatabase} variant="secondary" size="sm" disabled={loading}>
+            📥 Seed
           </Button>
-          <Button onClick={() => setIsAdding(!isAdding)} variant="primary" icon={Plus}>
-            {isAdding ? 'Cancel' : 'Add New Word'}
+          <Button onClick={() => setIsAdding(!isAdding)} variant="primary" size="sm" icon={Plus}>
+            {isAdding ? 'Cancel' : 'Add Word'}
           </Button>
         </div>
       </header>
@@ -192,6 +192,7 @@ export default function AdminWordsPage() {
         <table className="admin-table">
           <thead>
             <tr>
+              <th className="w-12 text-center">№</th>
               <th>Word</th>
               <th>Level</th>
               <th>Translation (UZ/EN)</th>
@@ -199,15 +200,16 @@ export default function AdminWordsPage() {
             </tr>
           </thead>
           <tbody>
-            {words.map(w => (
+            {words.map((w, index) => (
               <tr key={w.id}>
+                <td className="text-center text-xs text-muted font-mono">{index + 1}</td>
                 <td className="font-bold text-primary">
                   {w.word}
                   {w.article && <span className="text-xs text-muted ml-1">({w.article})</span>}
                 </td>
                 <td>
-                  <span className={`level-badge level-${w.level?.toLowerCase()}`}>
-                    {w.level}
+                  <span className={`level-badge level-${w.level?.toLowerCase() || 'a1'}`}>
+                    {w.level || 'A1'}
                   </span>
                 </td>
                 <td>

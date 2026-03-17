@@ -23,7 +23,7 @@ function buildQuestions(fetchedWords) {
   // Deduplicate by definition so options are always distinct
   const seen = new Set();
   const uniqueWords = fetchedWords.filter(w => {
-    const def = w.definition || w.translation || w.meaning || '';
+    const def = w.translation_uz || w.meaning || '';
     if (!def || seen.has(def)) return false;
     seen.add(def);
     return true;
@@ -35,17 +35,17 @@ function buildQuestions(fetchedWords) {
   const pool = shuffle(uniqueWords).slice(0, Math.min(10, uniqueWords.length));
 
   return pool.map(word => {
-    const correctDef = word.definition || word.translation || word.meaning || 'No translation';
+    const correctDef = word.translation_uz || word.meaning || 'No translation';
 
     // Get 3 distractors that are different from the correct answer
     const distractors = shuffle(
       uniqueWords.filter(w => {
-        const d = w.definition || w.translation || w.meaning || '';
+        const d = w.translation_uz || w.meaning || '';
         return w.id !== word.id && d !== correctDef && d !== '';
       })
     )
       .slice(0, 3)
-      .map(w => w.definition || w.translation || w.meaning);
+      .map(w => w.translation_uz || w.meaning);
 
     // If we couldn't get 3 unique distractors, skip this word
     if (distractors.length < 3) return null;
