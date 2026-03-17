@@ -188,16 +188,46 @@ export default function AdminWordsPage() {
         </Card>
       )}
 
-      <div className="words-grid">
-        {words.map(w => (
-          <Card key={w.id} className="word-item-card">
-            <h4>{w.word} <span className="text-muted text-sm font-normal ml-2">{w.phonetic}</span></h4>
-            <p className="text-sm mt-2">{w.definition || w.meaning}</p>
-            <p className="text-muted text-sm italic mt-2">"{w.example}"</p>
-          </Card>
-        ))}
+      <div className="table-responsive">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Word</th>
+              <th>Level</th>
+              <th>Translation (UZ/EN)</th>
+              <th>Example Sentence</th>
+            </tr>
+          </thead>
+          <tbody>
+            {words.map(w => (
+              <tr key={w.id}>
+                <td className="font-bold text-primary">
+                  {w.word}
+                  {w.article && <span className="text-xs text-muted ml-1">({w.article})</span>}
+                </td>
+                <td>
+                  <span className={`level-badge level-${w.level?.toLowerCase()}`}>
+                    {w.level}
+                  </span>
+                </td>
+                <td>
+                  <div className="flex flex-column gap-1">
+                    <span className="text-sm">{w.translation_uz || w.meaning}</span>
+                    <span className="text-xs text-muted">{w.translation_en}</span>
+                  </div>
+                </td>
+                <td>
+                  <p className="text-xs italic line-clamp-2" title={w.example_de || w.example}>
+                    {w.example_de || w.example}
+                  </p>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        
         {words.length === 0 && !isAdding && (
-          <div className="text-center p-8 text-muted full-width">No words in the database yet. Add one!</div>
+          <div className="text-center p-8 text-muted">No words in the database yet. Add one!</div>
         )}
       </div>
     </div>
