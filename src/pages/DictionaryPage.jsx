@@ -43,15 +43,15 @@ export default function DictionaryPage() {
           </h1>
           <p className="text-muted mt-2">Search through {words.length} German vocabulary words.</p>
         </div>
-        <div className="search-bar-wrapper mt-6 relative w-full max-w-2xl">
-          <Search size={20} className="search-icon absolute left-4 top-1/2 transform translate-y-[-50%] text-muted" />
+        <div className="search-bar-wrapper">
           <input
             type="text"
-            className="dictionary-search-input pl-12 pr-4 py-4 w-full bg-card border border-primary/20 rounded-xl focus:border-primary focus:outline-none transition-colors"
-            placeholder="Search by German, Uzbek, or English..."
+            className="dictionary-search-input"
+            placeholder="Nemischa, o'zbekcha yoki inglizcha qidiring..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          <Search size={22} className="search-icon absolute left-5 top-1/2 transform translate-y-[-50%] text-muted" />
         </div>
       </header>
 

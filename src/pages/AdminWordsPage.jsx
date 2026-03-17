@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Plus, BookOpen, ArrowLeft } from 'lucide-react';
+import { Plus, BookOpen, ArrowLeft, Search as SearchIcon } from 'lucide-react';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import { wordService } from '../services/wordService';
@@ -15,6 +15,7 @@ export default function AdminWordsPage() {
   const [words, setWords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Word form state
   const [formData, setFormData] = useState({
@@ -48,6 +49,15 @@ export default function AdminWordsPage() {
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  const filteredWords = words.filter(word => {
+    const term = searchQuery.toLowerCase();
+    return (
+      word.word?.toLowerCase().includes(term) ||
+      (word.translation_uz || word.meaning)?.toLowerCase().includes(term) ||
+      word.translation_en?.toLowerCase().includes(term)
+    );
+  });
 
   const handleAddWord = async (e) => {
     e.preventDefault();
@@ -157,6 +167,19 @@ export default function AdminWordsPage() {
         </div>
       </header>
 
+      <div className="admin-search-wrapper mb-8">
+        <div className="search-bar-wrapper">
+          <input
+            type="text"
+            className="dictionary-search-input"
+            placeholder="Jadvaldan so'z qidiring..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <SearchIcon size={22} className="search-icon absolute left-5 top-1/2 transform translate-y-[-50%] text-muted" />
+        </div>
+      </div>
+
       {isAdding && (
         <Card className="mb-8 fade-in border-primary">
           <form onSubmit={handleAddWord} className="word-form">
@@ -200,7 +223,7 @@ export default function AdminWordsPage() {
             </tr>
           </thead>
           <tbody>
-            {words.map((w, index) => (
+            {filteredWords.map((w, index) => (
               <tr key={w.id}>
                 <td className="text-center text-xs text-muted font-mono">{index + 1}</td>
                 <td className="font-bold text-primary">

@@ -3,6 +3,41 @@
   padding-bottom: 1.5rem;
 }
 
+.search-bar-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+}
+
+.dictionary-search-input {
+  width: 100%;
+  padding: 0.85rem 1.25rem 0.85rem 3.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.dictionary-search-input:focus {
+  border-color: var(--primary);
+  background: var(--bg-hover);
+  box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.15), 0 10px 20px -10px rgba(0,0,0,0.5);
+}
+
+.search-icon {
+  pointer-events: none;
+  transition: color 0.3s ease;
+  z-index: 11;
+}
+
+.dictionary-search-input:focus + .search-icon {
+  color: var(--primary);
+}
+
 .word-form {
   display: flex;
   flex-direction: column;
@@ -17,6 +52,25 @@
 
 .form-group.full-width {
   grid-column: 1 / -1;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.1);
 }
 
 .form-input.textarea {
