@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Layers, PlayCircle, Trophy, User, Shield, BookOpen, Search, Menu, X } from 'lucide-react';
+import { Home, Layers, PlayCircle, Trophy, User, Shield, BookOpen, Search, Menu, X, Megaphone } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import NotificationCenter from './NotificationCenter';
 import './Sidebar.css';
 
 function Sidebar() {
@@ -19,9 +20,12 @@ function Sidebar() {
           <div className="logo-icon">W</div>
           <span className="logo-text">WordBoost</span>
         </div>
-        <button className="hamburger-btn" onClick={toggle} aria-label="Menu">
-          {open ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationCenter />
+          <button className="hamburger-btn" onClick={toggle} aria-label="Menu">
+            {open ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </div>
 
       {/* Overlay */}
@@ -53,9 +57,17 @@ function Sidebar() {
               <Shield size={20} /><span>Manage Users</span>
             </NavLink>
           )}
+          {userRole === 'admin' && (
+            <NavLink to="/admin/notifications" className="nav-item admin-link" onClick={close}>
+              <Megaphone size={20} /><span>Broadcast</span>
+            </NavLink>
+          )}
           <NavLink to="/profile" className="nav-item" onClick={close}>
             <User size={20} /><span>Profile</span>
           </NavLink>
+          <div className="sidebar-footer-desktop hidden md:block mt-4 pt-4 border-t border-white/5">
+            <NotificationCenter />
+          </div>
         </div>
       </aside>
     </>

@@ -9,6 +9,7 @@ import ProgressPage from './pages/ProgressPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminWordsPage from './pages/AdminWordsPage';
+import AdminNotificationsPage from './pages/AdminNotificationsPage';
 import DictionaryPage from './pages/DictionaryPage';
 
 import { AuthProvider } from './context/AuthContext';
@@ -32,6 +33,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/words" element={<AdminWordsPage />} />
+          <Route path="/admin/notifications" element={<AdminNotificationsPage />} />
         </Route>
       </Routes>
       </BrowserRouter>

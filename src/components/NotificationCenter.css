@@ -1,0 +1,126 @@
+.notification-center-container {
+  position: relative;
+  display: inline-block;
+}
+
+.notification-bell-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.notification-bell-btn:hover {
+  color: var(--primary);
+  background: rgba(108, 99, 255, 0.1);
+}
+
+.notification-bell-btn.has-unread {
+  color: var(--text-main);
+}
+
+.unread-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: var(--primary);
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 10px;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #1a1a2e;
+}
+
+.notification-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  width: 300px;
+  max-height: 400px;
+  background: rgba(28, 28, 45, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-header {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dropdown-header h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.notifications-list-mini {
+  overflow-y: auto;
+  max-height: 330px;
+}
+
+.mini-notification-item {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: background 0.2s ease;
+}
+
+.mini-notification-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.mini-notification-item:last-child {
+  border-bottom: none;
+}
+
+.mini-title {
+  color: var(--text-main);
+  margin-bottom: 0.15rem;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Custom scrollbar for mini list */
+.notifications-list-mini::-webkit-scrollbar {
+  width: 4px;
+}
+
+.notifications-list-mini::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notifications-list-mini::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}

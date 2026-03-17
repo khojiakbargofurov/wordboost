@@ -1,0 +1,65 @@
+.admin-notifications-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.notifications-grid {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.sticky-form {
+  position: sticky;
+  top: 2rem;
+}
+
+.broadcast-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.type-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.glass-card {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(43, 43, 75, 0.3);
+  backdrop-filter: blur(8px);
+}
+
+.notification-history-item {
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.notification-history-item:hover {
+  border-color: rgba(108, 99, 255, 0.2);
+  transform: translateX(4px);
+}
+
+.delete-item-btn {
+  opacity: 0.5;
+}
+
+.notification-history-item:hover .delete-item-btn {
+  opacity: 1;
+}
+
+@media (max-width: 1024px) {
+  .notifications-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sticky-form {
+    position: static;
+  }
+}
