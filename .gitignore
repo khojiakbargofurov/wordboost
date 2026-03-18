@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Bot secrets
+bot/.env
+bot/firebase-adminsdk.json

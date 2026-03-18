@@ -15,13 +15,20 @@ function Sidebar() {
     const fetchUnread = async () => {
       try {
         const notifs = await notificationService.getRecentNotifications(10);
-        const lastSeen = localStorage.getItem('lastSeenNotificationId');
-        if (notifs.length > 0 && notifs[0].id !== lastSeen) {
-          const idx = notifs.findIndex(n => n.id === lastSeen);
-          setUnreadCount(idx === -1 ? notifs.length : idx);
-        } else {
-          setUnreadCount(0);
+        const lastSeenStr = localStorage.getItem('lastSeenNotificationDate');
+        let count = 0;
+        
+        if (notifs.length > 0) {
+          if (!lastSeenStr) {
+            // No last seen date, all are unread
+            count = notifs.length;
+          } else {
+            const lastSeenDate = new Date(lastSeenStr).getTime();
+            // Count how many notifications are newer than the last seen date
+            count = notifs.filter(n => new Date(n.createdAt).getTime() > lastSeenDate).length;
+          }
         }
+        setUnreadCount(count);
       } catch (error) {
         console.error(error);
       }

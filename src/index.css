@@ -44,8 +44,8 @@ body {
   font-family: var(--font-sans);
   background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse 80% 60% at 50% -20%, rgba(108, 99, 255, 0.12), transparent),
-    radial-gradient(ellipse 60% 40% at 90% 80%, rgba(167, 139, 250, 0.06), transparent);
+    radial-gradient(ellipse 80% 60% at 50% -20%, var(--primary-alpha), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 80%, rgba(167, 139, 250, 0.04), transparent);
   background-attachment: fixed;
   color: var(--text-main);
   line-height: 1.6;
@@ -92,10 +92,11 @@ input, select, textarea, button {
 
 /* Glassmorphism helper */
 .glass {
-  background: rgba(20, 20, 28, 0.7);
+  background: var(--bg-card);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Transition helper */

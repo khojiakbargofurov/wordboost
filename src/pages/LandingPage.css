@@ -15,7 +15,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(17, 17, 17, 0.8);
+  background: var(--bg-card);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
@@ -119,7 +119,7 @@
   line-height: 1.08;
   letter-spacing: -0.04em;
   margin-bottom: 1.5rem;
-  color: #fff;
+  color: var(--text-main);
 }
 
 .text-gradient {
@@ -180,7 +180,7 @@
 .stat-num {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-main);
   letter-spacing: -0.02em;
 }
 
@@ -218,7 +218,7 @@
   font-weight: 700;
   letter-spacing: -0.03em;
   margin-bottom: 3.5rem;
-  color: #fff;
+  color: var(--text-main);
 }
 
 .features-grid {
@@ -262,7 +262,7 @@
 .feat-card h3 {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-main);
 }
 
 .feat-card p {

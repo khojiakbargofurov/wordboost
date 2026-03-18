@@ -8,7 +8,7 @@ import { notificationService } from '../services/notificationService';
 import './AdminNotificationsPage.css';
 
 export default function AdminNotificationsPage() {
-  const { userRole, user } = useAuth();
+  const { userRole, currentUser } = useAuth();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,13 +52,14 @@ export default function AdminNotificationsPage() {
     try {
       await notificationService.sendBroadcast({
         ...formData,
-        authorId: user.uid
+        authorId: currentUser?.uid || 'admin'
       });
       setFormData({ title: '', message: '', type: 'info' });
       await fetchNotifications();
       alert("Xabar muvaffaqiyatli yuborildi!");
     } catch (error) {
-      alert("Xabar yuborishda xatolik yuz berdi");
+      console.error("DEBUG: Full error from sendBroadcast:", error);
+      alert("Xatolik: " + (error.message || "Noma'lum xato yuz berdi"));
     } finally {
       setSending(false);
     }

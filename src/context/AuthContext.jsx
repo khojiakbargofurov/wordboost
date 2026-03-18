@@ -6,7 +6,8 @@ import {
   onAuthStateChanged,
   updateProfile,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  signInWithCustomToken
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
@@ -23,6 +24,7 @@ export function AuthProvider({ children }) {
   const [userData, setUserData] = useState(null);
   const [userRole, setUserRole] = useState(null); // 'student', 'teacher', 'admin'
   const [loading, setLoading] = useState(true);
+  const [isTelegramWebApp, setIsTelegramWebApp] = useState(false);
 
   // Helper function to create or fetch user in Firestore
   const handleUserRoles = async (user, additionalData = {}) => {
@@ -100,7 +102,45 @@ export function AuthProvider({ children }) {
     return signOut(auth);
   }
 
+  // Telegram Seamless Authentication Logic
+  const handleTelegramAuth = async () => {
+    try {
+      const tg = window.Telegram?.WebApp;
+      if (tg && tg.initDataUnsafe?.user) {
+        setIsTelegramWebApp(true);
+        tg.expand(); // Expand the web app to full height
+        
+        const tgUser = tg.initDataUnsafe.user;
+        const initData = tg.initData;
+
+        // Call our Node.js backend to verify data and get Firebase Custom Token
+        try {
+          const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+          const res = await fetch(`${backendUrl}/api/auth/telegram`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ initData, user: tgUser })
+          });
+
+          if (!res.ok) throw new Error('Failed to authenticate with Telegram backend');
+          
+          const { customToken } = await res.json();
+          await signInWithCustomToken(auth, customToken);
+          console.log("✅ Seamlessly logged in Telegram User:", tgUser.first_name);
+
+        } catch (authErr) {
+          console.error("Backend Auth Error:", authErr);
+        }
+      }
+    } catch (error) {
+      console.error("Telegram Auth Error:", error);
+    }
+  };
+
   useEffect(() => {
+    // Check for Telegram Web App context on load
+    handleTelegramAuth();
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
@@ -119,6 +159,7 @@ export function AuthProvider({ children }) {
     currentUser,
     userData,
     userRole,
+    isTelegramWebApp,
     login,
     signup,
     loginWithGoogle,
