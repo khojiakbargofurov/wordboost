@@ -10,6 +10,7 @@ import ProfilePage from './pages/ProfilePage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminWordsPage from './pages/AdminWordsPage';
 import AdminNotificationsPage from './pages/AdminNotificationsPage';
+import NotificationsPage from './pages/NotificationsPage';
 import DictionaryPage from './pages/DictionaryPage';
 
 import { AuthProvider } from './context/AuthContext';
@@ -31,6 +32,7 @@ function App() {
           <Route path="/progress" element={<ProgressPage />} />
           <Route path="/dictionary" element={<DictionaryPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/words" element={<AdminWordsPage />} />
           <Route path="/admin/notifications" element={<AdminNotificationsPage />} />

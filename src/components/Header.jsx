@@ -6,10 +6,18 @@ import './Header.css';
 export default function Header() {
   const { user } = useAuth();
 
+  const currentDate = new Date().toLocaleDateString('uz-UZ', {
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric'
+  });
+
   return (
     <header className="app-header glass">
-      <div className="header-left">
-        {/* Placeholder for breadcrumbs or page title if needed */}
+      <div className="header-left flex flex-col justify-center">
+        <h2 className="text-xl font-bold hidden md:block text-white">Xush kelibsiz 👋</h2>
+        <p className="text-xs text-muted hidden lg:block mt-1">{currentDate}</p>
       </div>
       <div className="header-right">
         <NotificationCenter direction="top" />

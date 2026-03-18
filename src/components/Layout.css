@@ -1,22 +1,15 @@
 .layout {
   display: flex;
   min-height: 100vh;
-  background-color: var(--bg-main);
-  color: var(--text-main);
-}
-
-.content-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0; /* prevent flex overflow */
+  width: 100%;
 }
 
 .main-content {
   flex: 1;
-  padding: 0 2rem 2rem 0;
+  padding: 2rem;
   overflow-y: auto;
   position: relative;
+  min-width: 0; /* prevent flex overflow */
 }
 
 .main-content::before {
@@ -26,7 +19,7 @@
   left: 0;
   right: 0;
   height: 400px;
-  background: radial-gradient(circle at 50% 0%, rgba(108, 99, 255, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle at 50% -20%, rgba(108, 99, 255, 0.1) 0%, transparent 80%);
   pointer-events: none;
   z-index: -1;
 }

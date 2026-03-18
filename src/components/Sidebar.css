@@ -84,14 +84,53 @@
   border: 1px solid rgba(108, 99, 255, 0.2);
 }
 
+.sidebar-badge {
+  background: linear-gradient(135deg, #ff4d4d, #f93232);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 12px;
+  margin-left: auto;
+  box-shadow: 0 0 10px rgba(249, 50, 50, 0.4);
+}
+
 .nav-item svg { flex-shrink: 0; }
 .nav-item.active svg { color: var(--accent-violet); }
 
 .admin-link { color: #f59e0b !important; }
 .admin-link:hover { background: rgba(245, 158, 11, 0.1) !important; }
 
-/* ── Mobile hamburger ─────────────────────────── */
+/* ── Mobile hamburger & Bell ──────────────────── */
 .mobile-topbar { display: none; }
+
+.mobile-bell {
+  position: relative;
+  color: var(--text-muted);
+  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.mobile-bell:hover, .mobile-bell.active { color: var(--text-main); }
+
+.mobile-unread-badge {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  background: linear-gradient(135deg, #ff4d4d, #f93232);
+  color: white;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 4px;
+  border-radius: 8px;
+  min-width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .hamburger-btn {
   background: transparent;

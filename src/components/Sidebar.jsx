@@ -1,13 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Layers, PlayCircle, Trophy, User, Shield, BookOpen, Search, Menu, X, Megaphone } from 'lucide-react';
+import { Home, Layers, PlayCircle, Trophy, User, Shield, BookOpen, Search, Menu, X, Megaphone, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import NotificationCenter from './NotificationCenter';
+import { notificationService } from '../services/notificationService';
 import './Sidebar.css';
 
 function Sidebar() {
   const { userRole } = useAuth();
   const [open, setOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    // Optional: simple polling or fetch once to show unread count in sidebar
+    const fetchUnread = async () => {
+      try {
+        const notifs = await notificationService.getRecentNotifications(10);
+        const lastSeen = localStorage.getItem('lastSeenNotificationId');
+        if (notifs.length > 0 && notifs[0].id !== lastSeen) {
+          const idx = notifs.findIndex(n => n.id === lastSeen);
+          setUnreadCount(idx === -1 ? notifs.length : idx);
+        } else {
+          setUnreadCount(0);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const toggle = () => setOpen(o => !o);
   const close  = () => setOpen(false);
@@ -21,7 +43,10 @@ function Sidebar() {
           <span className="logo-text">WordBoost</span>
         </div>
         <div className="flex items-center gap-2">
-          <NotificationCenter direction="top" />
+          <NavLink to="/notifications" className="mobile-bell" onClick={close}>
+            <Bell size={20} />
+            {unreadCount > 0 && <span className="mobile-unread-badge">{unreadCount}</span>}
+          </NavLink>
           <button className="hamburger-btn" onClick={toggle} aria-label="Menu">
             {open ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -44,6 +69,11 @@ function Sidebar() {
           <NavLink to="/quiz"       className="nav-item" onClick={close}><PlayCircle size={20} /><span>Quizzes</span></NavLink>
           <NavLink to="/dictionary" className="nav-item" onClick={close}><Search size={20} /><span>Dictionary</span></NavLink>
           <NavLink to="/progress"   className="nav-item" onClick={close}><Trophy size={20} /><span>Leaderboard</span></NavLink>
+          <NavLink to="/notifications" className="nav-item" onClick={close}>
+            <Bell size={20} />
+            <span>Notifications</span>
+            {unreadCount > 0 && <span className="sidebar-badge">{unreadCount}</span>}
+          </NavLink>
         </nav>
 
         <div className="sidebar-bottom">
