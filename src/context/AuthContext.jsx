@@ -6,7 +6,8 @@ import {
   onAuthStateChanged,
   updateProfile,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signInWithCustomToken
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -91,9 +92,9 @@ export function AuthProvider({ children }) {
 
   async function loginWithGoogle(role = 'student') {
     const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
-    await handleUserRoles(userCredential.user, { role });
-    return userCredential;
+    // signInWithRedirect ishlatamiz — COOP window.closed xatosidan xoli
+    await signInWithRedirect(auth, provider);
+    // Natija onAuthStateChanged orqali avtomatik uslanadi
   }
 
   function logout() {
@@ -140,6 +141,17 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     // Check for Telegram Web App context on load
     handleTelegramAuth();
+
+    // Google Redirect natijasini ushlash
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result?.user) {
+          await handleUserRoles(result.user, { role: 'student' });
+        }
+      })
+      .catch((error) => {
+        console.error('Google redirect result error:', error);
+      });
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
